@@ -1,12 +1,5 @@
 import { mergeSort } from './merge-sort.mjs'
 
-const cleanedArray = cleanArray([1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324]);
-const binaryTree = Tree(cleanedArray);
-binaryTree.print()
-console.log(binaryTree.levelOrder(add1))
-binaryTree.print();
-
-
 function makeNode(data) {
   return {
       left: null,
@@ -23,7 +16,14 @@ function Tree(arr) {
     insert: (value) => root = insertValue(value, root),
     delete: (value) => root = deleteItem(value, root),
     find: (value) => findValue(value, root),
-    levelOrder: (callback) => levelOrder(root, callback)
+    levelOrder: (callback) => levelOrder(root, callback),
+    preOrder: (callback) => preOrder(root, callback),
+    inOrder: (callback) => inOrder(root, callback),
+    postOrder: (callback) => postOrder(root, callback),
+    height: (value = root.data) => height(findValue(value, root)),
+    depth: (value = root.data) => depth(findValue(value, root), root),
+    isBalanced: () => isBalanced(root),
+    rebalance: () => root = buildTree(rebalance(root))
   }
 }
 
@@ -111,6 +111,7 @@ function deleteItem(value, node) {
 }
 
 function findValue(value, node) {
+  if(!node) return null
   if(value == node.data) return node;
   if(value > node.data) return findValue(value, node.right);
   if(value < node.data) return findValue(value, node.left);
@@ -124,17 +125,64 @@ function levelOrder(node, callback) {
   while (queue[0]) {
     let current = queue[0];
     callback ? current.data = callback(current.data) : newList.push(current.data);
-    if (current.left !== null) {
-      queue.push(current.left)
-    }
-    if (current.right !== null) {
-      queue.push(current.right)
-    }
+    if (current.left !== null) queue.push(current.left)
+    if (current.right !== null) queue.push(current.right)
     queue.shift();
   }
   return callback ? `${callback} performed on all values.` : newList
 }
 
-function add1 (num) {
-  return num + 1;
+function preOrder(node, callback, newList = []) {
+  if (node == null) return node;
+  callback ? node.data = callback(node.data) : newList.push(node.data);
+  preOrder(node.left, callback, newList)
+  preOrder(node.right, callback, newList)
+  
+  return callback ? `${callback} performed on all values.` : newList
 }
+
+function inOrder(node, callback, newList = []) {
+  if (node == null) return node
+  inOrder(node.left, callback, newList)
+  callback ? node.data = callback(node.data) : newList.push(node.data)
+  inOrder(node.right, callback, newList)
+ 
+  return callback ? `${callback} performed on all values.` : newList
+}
+
+function postOrder(node, callback, newList = []) {
+  if (node == null) return node
+  postOrder(node.left, callback, newList)
+  
+  postOrder(node.right, callback, newList)
+  callback ? node.data = callback(node.data) : newList.push(node.data)
+ 
+  return callback ? `${callback} performed on all values.` : newList
+}
+
+function height(node) {
+  if (node == null) return 0
+  return 1 + Math.max(
+    node.left !== null ? height(node.left) : 0,
+    node.right !== null ? height(node.right) : 0
+  );
+}
+
+function depth(node, root) {
+  if (node == null) return 0
+  return height(root) - height(node)
+}
+
+function isBalanced(node) {
+  if (Math.abs(height(node.left) - height(node.right)) > 1) return false
+  return true
+}
+
+function rebalance(node) {
+  let newArray = levelOrder(node);
+  let cleanedArray = cleanArray(newArray);
+
+  return cleanedArray
+}
+
+export { Tree, cleanArray }
